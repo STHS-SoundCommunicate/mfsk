@@ -40,8 +40,8 @@ def bits2index(bits: list[int]) -> list[int]:
 
 def gen_wave(index: int) -> np.ndarray:
     freq = signal_freqs[index]
-    n_samples = int(rate * signal_ms / 1000)
-    t = np.arange(n_samples) / rate
+    n_signals = int(rate * signal_ms / 1000)
+    t = np.arange(n_signals) / rate
     return np.sin(2 * np.pi * freq * t)
 
 def play(data: np.ndarray):
