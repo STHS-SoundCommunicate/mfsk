@@ -1,5 +1,6 @@
 import numpy as np
 import sounddevice as sd
+import wave
 
 channels = 16 #16チャンネル使用
 bits_per_signal = 4
@@ -48,6 +49,14 @@ def play(data: np.ndarray):
     sd.play(data.astype(np.float32), samplerate = sampling_rate)
     sd.wait()
 
+def save_wave(data: np.ndarray, filename :str):
+    pcm = (data * np.iinfo(np.int32).max).astype(np.int32) #waveライブラリはpcm整数（16,32bitなどの整数）しか扱えないので変換
+    with wave.open(filename, "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(4) #1サンプル4バイト→32bitで表現
+        wf.setframerate(sampling_rate)
+        wf.writeframes(pcm.tobytes())
+
 if __name__ == "__main__":
     send_data = "test"
     bits = pad_bits(str2bits(send_data))
@@ -59,5 +68,5 @@ if __name__ == "__main__":
     
     print(bits)
     print(value)
-    
+    save_wave(waves,".test.wav")
     play(waves)
