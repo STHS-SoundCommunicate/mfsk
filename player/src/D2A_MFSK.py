@@ -4,8 +4,8 @@ import sounddevice as sd
 channels = 16 #16チャンネル使用
 bits_per_signal = 4
 bps = 200 #200bpsを目標
-rate = 44100 #44100hzで通信
-signal_ms = 80
+sampling_rate = 44100 #44100hzで通信
+signal_ms = 1 / bps * bits_per_signal * 1000
 baud_rate = 1000 / signal_ms #分解能は12.5hz
 signal_freq_start = 15000
 signal_freq_width = 125
@@ -40,12 +40,12 @@ def bits2index(bits: list[int]) -> list[int]:
 
 def gen_wave(index: int) -> np.ndarray:
     freq = signal_freqs[index]
-    n_signals = int(rate * signal_ms / 1000)
-    t = np.arange(n_signals) / rate
+    n_signals = int(sampling_rate * signal_ms / 1000)
+    t = np.arange(n_signals) / sampling_rate
     return np.sin(2 * np.pi * freq * t)
 
 def play(data: np.ndarray):
-    sd.play(data.astype(np.float32), samplerate = rate)
+    sd.play(data.astype(np.float32), samplerate = sampling_rate)
     sd.wait()
 
 if __name__ == "__main__":
