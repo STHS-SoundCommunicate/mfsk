@@ -16,10 +16,14 @@
 
 ## 関数の解説
 
-### str2bits
+| 関数名 | 役割 | 引数 | 出力 |
+| --- | --- | --- | --- |
+| str2bits(s) | 文字列をUTF-8のバイト列に変換し、シフトしてAND演算を行うことによって各バイトを8ビットのリストに展開する | s: str | list[int] (0/1のビット列) |
+| pad_bits(bits) | ビット列の長さを bits_per_signal の倍数にそろえるため、パディング(必要な数だけ0を追加)を行う | bits: list[int] | list[int] (パディング後のビット列) |
+| bits2index(bits) | bits_per_signal(4ビット) ごとにビットをまとめ、0~15を表す周波数チャンネルのインデックスに変換する | bits: list[int] | list[int] (チャンネルのインデックス列) |
+| gen_wave(index) | 指定インデックスに対応する周波数のサイン波を1シグナル分生成する | index: int | np.ndarray (波形データ) |
+| play(data) | 生成した波形をsounddeviceライブラリの機能で再生し、再生完了まで待機する | data: np.ndarray | なし |
+| save_wave(data, filename) | 波形を32ビットのPCMに変換し、wavファイルとして保存する | data: np.ndarray , filename: str | なし |
 
-文字列をUTF-8のビット列にエンコードする関数。resultリストにエンコードした後のビット列が入っている。
-
-### pad_bits
 
 
