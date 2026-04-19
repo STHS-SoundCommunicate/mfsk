@@ -33,6 +33,13 @@ def index_to_binary(index: list) -> list[int]:  ## テスト用
     return binary
 
 
+def index_to_message(index: list):
+    byte_values = []
+    for i in range(0, len(index), 2):
+        byte_values.append((index[i] << 4) | index[i + 1])
+    return bytes(byte_values).decode()
+
+
 def audio_to_freqs() -> np.ndarray:
     n_fft = 882
     hop_length = int(sr * (signal_ms / 1000))  # 882
@@ -54,5 +61,5 @@ def audio_to_freqs() -> np.ndarray:
 if __name__ == "__main__":
     test_freqs = audio_to_freqs()
     test_index = detect_index(test_freqs)
-    test_binary = index_to_binary(test_index)
-    print(test_binary)
+    test_message = index_to_message(test_index)
+    print(test_message)
