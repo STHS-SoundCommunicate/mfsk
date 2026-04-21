@@ -31,6 +31,23 @@ def bits2index(bits: list[int]) -> list[int]:
         result.append(index)
     return result
 
+def crc8(data: list[int]) -> int:
+    #4/22に実装する
+    pass
+
+def genheader(payload: list[int]) -> list[int]:
+    if(len(payload) > 255):
+        raise ValueError("うわーん!ペイロードがデカすぎます!")
+    payload_length = len(payload)
+    message_ID = 0 #実験用として0で固定
+    payload_length_symbols = [payload_length >> 4, payload_length & 0xF]
+    message_ID_symbols = [message_ID >> 4, message_ID & 0xF]
+    header_symbols_raw = preamble + payload_length_symbols + message_ID_symbols
+    crc = crc8(header_symbols_raw)
+    crc_symbols = [crc >> 4, crc & 0xF]
+    header_symbols = header_symbols_raw + crc_symbols
+    return header_symbols
+
 def gen_wave(index: int) -> np.ndarray:
     freq = signal_freqs[index]
     n_signals = int(sampling_rate * signal_ms / 1000)
