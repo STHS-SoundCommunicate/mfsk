@@ -1,15 +1,7 @@
 import numpy as np
 import sounddevice as sd
 import wave
-
-channels = 16 #16チャンネル使用
-bits_per_signal = 4
-bps = 200 #200bpsを目標
-sampling_rate = 44100 #44100hzで通信
-signal_ms = 1 / bps * bits_per_signal * 1000
-baud_rate = 1000 / signal_ms #分解能は12.5hz
-signal_freq_start = 15000
-signal_freq_width = 125
+from const import *
 
 signal_freqs = []
 for i in range (channels):
