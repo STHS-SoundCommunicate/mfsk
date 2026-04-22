@@ -31,9 +31,16 @@ def bits2index(bits: list[int]) -> list[int]:
         result.append(index)
     return result
 
-def crc8(data: list[int]) -> int:
-    #4/22に実装する
-    pass
+def crc8(data: list[int]) -> int: #ドキュメントを作成するのは厳しいので知恵袋に上げたサイトを適宜参照
+    crc = 0
+    for val in data: #0~15の整数値
+        crc ^= val #XOR演算
+        for _ in range(8): #_はループカウンタを使わないことを示す
+            if crc & 0x80: #生成多項式を適用するかの判定
+                crc = ((crc << 1) ^ 0x07) & 0xFF #0x07は生成多項式を表す 0xFFは8bitのマスク
+            else:
+                crc = (crc << 1) & 0xFF #生成多項式とXORしない場合でも8bitにマスク
+    return crc  # 0〜255 (8bit)
 
 def genheader(payload: list[int]) -> list[int]:
     if(len(payload) > 255):
@@ -42,10 +49,10 @@ def genheader(payload: list[int]) -> list[int]:
     message_ID = 0 #実験用として0で固定
     payload_length_symbols = [payload_length >> 4, payload_length & 0xF]
     message_ID_symbols = [message_ID >> 4, message_ID & 0xF]
-    header_symbols_raw = preamble + payload_length_symbols + message_ID_symbols
-    crc = crc8(header_symbols_raw)
+    header_symbols_info =payload_length_symbols + message_ID_symbols
+    crc = crc8(header_symbols_info)
     crc_symbols = [crc >> 4, crc & 0xF]
-    header_symbols = header_symbols_raw + crc_symbols
+    header_symbols = preamble + header_symbols_info + crc_symbols
     return header_symbols
 
 def gen_wave(index: int) -> np.ndarray:
@@ -70,6 +77,7 @@ if __name__ == "__main__":
     send_data = "test"
     bits = pad_bits(str2bits(send_data))
     value = bits2index(bits) #いい変数名募集(2回目)
+    value = genheader(value) + value
     waves = []
     for i in value:
         waves.append(gen_wave(i))
