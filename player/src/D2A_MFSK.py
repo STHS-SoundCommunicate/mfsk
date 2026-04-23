@@ -74,7 +74,8 @@ def save_wave(data: np.ndarray, filename :str):
         wf.writeframes(pcm.tobytes())
 
 if __name__ == "__main__":
-    send_data = "test"
+    print("送信するメッセージを入力")
+    send_data = input()
     bits = pad_bits(str2bits(send_data))
     value = bits2index(bits) #いい変数名募集(2回目)
     value = genheader(value) + value
