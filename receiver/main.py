@@ -1,7 +1,9 @@
-import numpy as np
-import librosa
+from pathlib import Path
 
-file_name = ".test.wav"
+import librosa
+import numpy as np
+
+file_name = Path(__file__).with_name(".test.wav")
 
 signal_ms = 20 # 単位はms
 signal_freq_start = 15000
@@ -34,7 +36,7 @@ for i in range(channel):
     signal_freqs.append(signal_freq_start + i * signal_freq_width)
 
 def audio_to_freqs() -> np.ndarray:
-    wav, sr = librosa.load(file_name, sr = 44100)
+    wav, sr = librosa.load(str(file_name), sr = 44100)
     length = int(sr * (signal_ms / 1000)) # 882
 
     stft_result = librosa.stft(wav, n_fft=1024, hop_length=length)
