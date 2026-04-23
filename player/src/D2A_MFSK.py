@@ -74,10 +74,10 @@ def save_wave(data: np.ndarray, filename :str):
         wf.writeframes(pcm.tobytes())
 
 if __name__ == "__main__":
-    send_data = "test"
+    send_data = "https://drive.google.com/file/d/1qHhJhuTfJfh0_HjgrxF1M8hzi84Wdkg_/view?pli=1"
     bits = pad_bits(str2bits(send_data))
     value = bits2index(bits) #いい変数名募集(2回目)
-    value = genheader(value) + value
+    #value = genheader(value) + value #プリアンブル
     waves = []
     for i in value:
         waves.append(gen_wave(i))

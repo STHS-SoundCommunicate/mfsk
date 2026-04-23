@@ -34,10 +34,16 @@ def index_to_binary(index: list) -> list[int]:  ## テスト用
 
 
 def index_to_message(index: list):
+    # 例: 4bitシンボルを2つで1byte化している想定
     byte_values = []
     for i in range(0, len(index), 2):
-        byte_values.append((index[i] << 4) | index[i + 1])
-    return bytes(byte_values).decode()
+        hi = index[i]
+        lo = index[i + 1]
+        byte_values.append((hi << 4) | lo)
+
+    raw = bytes(byte_values)
+    print("hex:", raw.hex(" "))
+    return raw.decode("utf-8", errors="replace")  # 一時的にreplace
 
 
 def audio_to_freqs() -> np.ndarray:
@@ -61,5 +67,6 @@ def audio_to_freqs() -> np.ndarray:
 if __name__ == "__main__":
     test_freqs = audio_to_freqs()
     test_index = detect_index(test_freqs)
+    print(test_index)
     test_message = index_to_message(test_index)
     print(test_message)
