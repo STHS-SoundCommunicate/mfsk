@@ -17,12 +17,6 @@ def str2bits(s: str) -> list[int]:
     print(result) #デバッグ用
     return result
 
-def pad_bits(bits: list[int]) -> list[int]:
-    r = len(bits) % bits_per_signal
-    if r != 0:
-        bits += [0] * (bits_per_signal - r)
-    return bits
-
 def bits2index(bits: list[int]) -> list[int]:
     result = []
     for i in range(0, len(bits), bits_per_signal):
@@ -57,11 +51,13 @@ def genheader(payload: list[int]) -> list[int]:
     header_symbols = preamble + header_symbols_info + crc_symbols
     return header_symbols
 
-def gen_wave(index: int) -> np.ndarray:
+def gen_wave(index: int, phase: float) -> np.ndarray:
     freq = signal_freqs[index]
     n_signals = int(sampling_rate * signal_ms / 1000)
     t = np.arange(n_signals) / sampling_rate
-    return np.sin(2 * np.pi * freq * t)
+    duration = n_signals / sampling_rate
+    phase_next = (phase + 2 * np.pi * freq * duration) % (2 * np.pi) #次のシンボルの開始時点での位相を計算
+    return np.sin(2 * np.pi * freq * t + phase), phase_next
 
 def play(data: np.ndarray):
     sd.play(data.astype(np.float32), samplerate = sampling_rate)
@@ -78,12 +74,14 @@ def save_wave(data: np.ndarray, filename :str):
 if __name__ == "__main__":
     print("送信するメッセージを入力")
     send_data = input()
-    bits = pad_bits(str2bits(send_data))
+    bits =  str2bits(send_data)
     value = bits2index(bits) #いい変数名募集(2回目)
     value = genheader(value) + value
     waves = []
+    phase = 0
     for i in value:
-        waves.append(gen_wave(i))
+        wave_temp, phase = gen_wave(i, phase)
+        waves.append(wave_temp)
     waves = np.concatenate(waves)
     
     print(bits)
