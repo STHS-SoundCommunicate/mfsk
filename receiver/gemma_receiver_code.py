@@ -1,10 +1,13 @@
 import argparse
 
+
 import librosa
 import numpy as np
 import sounddevice as sd
 
-from const import bits_per_signal, preamble, sampling_rate, signal_ms, signal_freqs
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from const import *
 
 N = int(sampling_rate * signal_ms / 1000) # 1シンボルあたりのサンプル数(882サンプル)
 # 50%オーバーラップ時のホップ幅
