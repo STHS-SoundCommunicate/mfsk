@@ -34,13 +34,13 @@ def decode_symbols_to_text(payload_symbols: list[int]) -> str: #ペイロード�
         for i in range(bits_per_signal - 1, -1, -1): #3から0桁までのビットを取り出す
             bits.append((s >> i) & 1) #1とand演算した物をリストに追加
     # ビット列をバイト列に変換
-    bytes = list()
+    byte_array = list()
     for i in range(0, len(bits) - 7, 8): #各バイト列の先頭を取得
         b = 0
         for bit in bits[i:i + 8]: #8ビット分のビットを取り出しbに追加
             b = (b << 1) | bit
-        bytes.append(b)
-    return bytes(bytes).decode("utf-8", errors="replace")#utf-8でデコード
+        byte_array.append(b)
+    return bytes(byte_array).decode("utf-8", errors="replace")#utf-8でデコード
 
 
 def read_symbol(read_samples) -> int: #1シンボル分のサンプル読み取り
