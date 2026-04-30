@@ -2,10 +2,12 @@ import numpy as np
 import sounddevice as sd
 import wave
 from const import *
+import FHSS
 
 signal_freqs = []
 for i in range (channels):
-    signal_freqs.append(signal_freq_start + i * signal_freq_width)
+    #signal_freqs.append(signal_freq_start + i * signal_freq_width)
+    signal_freqs.append(i * signal_freq_width) #チャンネルごとの周波数だけのリスト
 
 def str2bits(s: str) -> list[int]:
     result = []
@@ -55,11 +57,12 @@ def genheader(payload: list[int]) -> list[int]:
     header_symbols = preamble + header_symbols_info + crc_symbols
     return header_symbols
 
-def gen_wave(index: int) -> np.ndarray:
-    freq = signal_freqs[index]
+def gen_wave(value: int, hop_index: int) -> np.ndarray:
+    freq = signal_freqs[value]
+    hop_freq = FHSS.return_fhss(hop_index)
     n_signals = int(sampling_rate * signal_ms / 1000)
     t = np.arange(n_signals) / sampling_rate
-    return np.sin(2 * np.pi * freq * t)
+    return np.sin(2 * np.pi * (freq + hop_freq) * t)
 
 def play(data: np.ndarray):
     sd.play(data.astype(np.float32), samplerate = sampling_rate)
@@ -79,8 +82,8 @@ if __name__ == "__main__":
     value = bits2index(bits) #いい変数名募集(2回目)
     #value = genheader(value) + value #プリアンブル
     waves = []
-    for i in value:
-        waves.append(gen_wave(i))
+    for i, v in enumerate(value):
+        waves.append(gen_wave(v, i))
     waves = np.concatenate(waves)
     
     print(bits)
