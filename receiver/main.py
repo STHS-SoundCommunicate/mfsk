@@ -19,7 +19,7 @@ def detect_index(freqs: np.ndarray) -> list[int]:
     index = []
     for f in freqs:
         for i in range(channel):
-            if f >= signal_freqs[i] and f < signal_freqs[i] + signal_freq_width:
+            if signal_freqs[i] <= f < signal_freqs[i] + signal_freq_width:
                 index.append(i)
     return index
 
