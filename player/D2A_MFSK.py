@@ -14,7 +14,6 @@ def str2bits(s: str) -> list[int]:
     for byte in s.encode("utf-8"):
         for i in range (7,-1,-1): #下位ビットから出力するとクッソ読みにくい
             result.append((byte >> i) & 1)
-    print(result) #デバッグ用
     return result
 
 def bits2index(bits: list[int]) -> list[int]:
@@ -47,11 +46,12 @@ def genheader(payload: list[int]) -> list[int]:
     message_ID_symbols = [message_ID >> 4, message_ID & 0xF]
     header_symbols_info =payload_length_symbols + message_ID_symbols
     crc = crc8(header_symbols_info)
+    print(f"info_data : {header_symbols_info}, crc : {crc}") #デバッグ用
     crc_symbols = [crc >> 4, crc & 0xF]
     header_symbols = preamble + header_symbols_info + crc_symbols
     return header_symbols
 
-def gen_wave(index: int, phase: float) -> np.ndarray:
+def gen_wave(index: int, phase: float) -> tuple[np.ndarray, float]:
     freq = signal_freqs[index]
     n_signals = int(sampling_rate * signal_ms / 1000)
     t = np.arange(n_signals) / sampling_rate

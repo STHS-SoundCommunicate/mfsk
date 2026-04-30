@@ -49,6 +49,16 @@ def read_symbol(read_samples) -> int: #1シンボル分のサンプル読み取�
         raise EOFError("symbol read requires more samples") #シンボル長よりサンプルが少ない時にエラー出力(ファイル入力時用)
     return detect_symbol(data)
 
+def crc8(data: list[int]) -> int: #ドキュメントを作成するのは厳しいので知恵袋に上げたサイトを適宜参照
+    crc = 0
+    for val in data: #0~15の整数値
+        crc ^= val #XOR演算
+        for _ in range(8): #_はループカウンタを使わないことを示す
+            if crc & 0x80: #生成多項式を適用するかの判定
+                crc = ((crc << 1) ^ 0x07) & 0xFF #0x07は生成多項式を表す 0xFFは8bitのマスク
+            else:
+                crc = (crc << 1) & 0xFF #生成多項式とXORしない場合でも8bitにマスク
+    return crc  # 0〜255 (8bit)
 
 def decode_framed(read_samples) -> str: #同期前は0.5シンボル単位で読み取り(精度向上のため)
     buf = np.zeros(N, dtype="float32") #シンボル長分のバッファを生成
@@ -69,23 +79,27 @@ def decode_framed(read_samples) -> str: #同期前は0.5シンボル単位で読
         if len(recent) >= pre_len * 2:
             window = recent[-pre_len * 2:] #recentの末尾から直近4シンボル(半シンボル8)を取り出す
             if window[::2] == preamble or window[1::2] == preamble: #多少位相がずれていても検出できるように奇数と偶数の並びがプリアンブルと一致するかを確認
-                break
+                #ヘッダ情報受信    
+                #payload length: 2シンボル
+                pl_hi = read_symbol(read_samples)
+                pl_lo = read_symbol(read_samples)
+                payload_length = (pl_hi << 4) | pl_lo
+                # message ID: 2シンボル
+                mi_hi = read_symbol(read_samples)
+                mi_lo = read_symbol(read_samples)
+                message_id = (mi_hi << 4) | mi_lo
+                # CRC8: 2シンボル
+                c8_hi = read_symbol(read_samples)
+                c8_lo = read_symbol(read_samples)
+                crc_raw = (c8_hi << 4) | c8_lo
+                print([pl_hi, pl_lo, mi_hi, mi_lo])
+                if(crc_raw == crc8([pl_hi, pl_lo, mi_hi, mi_lo])):
+                    print("CRC check passed")
+                    break
+                else:
+                    print("header is broken")
     print(f"プリアンブル検出  K={k} sym={sym:2d} recent={recent[-8:]}")
-
-    #ヘッダ情報受信    
-    #payload length: 2シンボル
-    pl_hi = read_symbol(read_samples)
-    pl_lo = read_symbol(read_samples)
-    payload_length = (pl_hi << 4) | pl_lo
-    # message ID: 2シンボル
-    mi_hi = read_symbol(read_samples)
-    mi_lo = read_symbol(read_samples)
-    message_id = (mi_hi << 4) | mi_lo
-    # CRC8: 2シンボル
-    c8_hi = read_symbol(read_samples)
-    c8_lo = read_symbol(read_samples)
-    crc8 = (c8_hi << 4) | c8_lo
-    print(f"payload length={payload_length} message_id={message_id} crc8={crc8}")
+    print(f"payload length={payload_length} message_id={message_id} crc={crc_raw}")
     #ペイロード受信
     payload_symbols = [read_symbol(read_samples) for _ in range(payload_length,)]
     print(payload_symbols)
