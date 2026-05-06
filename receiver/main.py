@@ -1,42 +1,41 @@
+import FHSS
 import librosa
 import numpy as np
+from const import channels, sampling_rate, signal_freq_width, signal_ms
 
 file_name = ".test.wav"
-
-signal_ms = 20  # 単位はms
-signal_freq_start = 15000
-signal_freq_width = 125
-signal_freqs = []
-channel = 16
-
-wav, sr = librosa.load(file_name, sr=44100)
-
-for i in range(channel):
-    signal_freqs.append(signal_freq_start + i * signal_freq_width)
+wav, sr = librosa.load(file_name, sr=sampling_rate)
 
 
 def detect_index(freqs: np.ndarray) -> list[int]:
     index = []
-    for f in freqs:
-        for i in range(channel):
-            if f >= signal_freqs[i] and f < signal_freqs[i] + signal_freq_width:
-                index.append(i)
+    half_band = signal_freq_width / 2
+    for symbol_index, f in enumerate(freqs):
+        hop_freq = FHSS.return_fhss(symbol_index)
+        base_freq = f - hop_freq
+        nearest_channel = int(round(base_freq / signal_freq_width))
+        nearest_center = nearest_channel * signal_freq_width
+        if (
+            0 <= nearest_channel < channels
+            and abs(base_freq - nearest_center) <= half_band
+        ):
+            index.append(nearest_channel)
     return index
 
 
-def index_to_binary(index: list) -> list[int]:  ## テスト用
-    binary = []
-    for i in index:
-        bin = "{:04b}".format(i)
-        for b in bin:
-            binary.append(int(b))
-    return binary
+# def index_to_binary(index: list) -> list[int]:  ## テスト用
+#     binary = []
+#     for i in index:
+#         bin = "{:04b}".format(i)
+#         for b in bin:
+#             binary.append(int(b))
+#     return binary
 
 
-def index_to_message(index: list):
+def index_to_message(index: list[int]):
     # 例: 4bitシンボルを2つで1byte化している想定
     byte_values = []
-    for i in range(0, len(index), 2):
+    for i in range(0, len(index) - 1, 2):
         hi = index[i]
         lo = index[i + 1]
         byte_values.append((hi << 4) | lo)
