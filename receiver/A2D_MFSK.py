@@ -113,6 +113,7 @@ def decode_framed(read_samples) -> str: #同期前は0.5シンボル単位で読
                     break
                 else:
                     print("header is broken")
+                print(crc8(crc8_data + [c8_hi, c8_lo]))
     print(f"プリアンブル検出  K={k} sym={sym:2d} recent={recent[-8:]}")
     print(f"payload length={payload_length} message_id={message_id} crc={crc_raw}")
     #ペイロード受信
