@@ -1,0 +1,14 @@
+.venv/
+.venv_project/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+.ipynb_checkpoints/
+.DS_Store
+.vscode/
+.venv/
+uv.lock
+.python-version
