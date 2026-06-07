@@ -12,3 +12,4 @@ venv/
 .venv/
 uv.lock
 .python-version
+*.wav
