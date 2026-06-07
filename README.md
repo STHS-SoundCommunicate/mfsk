@@ -1,35 +1,35 @@
-# MFSK
+# 通信にかかる時間の測定プログラムの使い方
 
-このリポジトリは MFSK（Multiple Frequency-Shift Keying）の送信（player）と受信（receiver）の実験コードを含みます。
+## 使う前に
 
-構成:
-
-- player/: 送信側コード（`D2A_MFSK.py` など）
-- receiver/: 受信側コード（`A2D_MFSK.py`, `main.py` など）
-- const.py: 共通定数
-
-使い方（簡易）:
-
-1. 依存関係をインストールします（例: 仮想環境を作成してから）:
+1. uv sync
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-pip install -r requirements.txt  # または pyproject.toml の依存を手動でインストール
+uv sync
 ```
 
-2. 送信（例）:
+しようね。
+
+1. 同じWifiに接続して
+
+受信側と送信側のパソコンを同じWifiに接続した状態で実験してください。おすすめはテザリングです。おそらくできるはずです。
+
+## 受信側
 
 ```bash
-python player/D2A_MFSK.py
+uv run wifi-receiver.py
 ```
 
-3. 受信（例）:
+「受信側PCのIPアドレスを入力してください」と出ると思います。このとき入力するのは受信側のパソコンのIPv4アドレスです。
+
+## 送信側
 
 ```bash
-python receiver/main.py
+uv run wifi-transmitter.py
 ```
 
-注意:
-- `receiver/main.py` は実験用スクリプトで、実行前に入力ファイル名やパラメータの確認が必要です。
-- 追加の整理（パッケージ化、テストの追加など）を希望する場合は教えてください。
+接続した後エンターを押したらすぐに通信が始まります。音量の設定を気をつけてください。
+
+## 注意点
+
+受信側を実行すると「[Wi-Fi待機中] 送信側からの接続を待っています」と出るはずなので、それで受信側を待機状態にしてから送信側のプログラムを実行してください。
