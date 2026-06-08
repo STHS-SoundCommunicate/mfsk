@@ -76,7 +76,7 @@ if __name__ == "__main__":
     send_data = input()
     bits =  str2bits(send_data)
     value = bits2index(bits) #いい変数名募集(2回目)
-    #value = genheader(value) + value #プリアンブル
+    value = genheader(value) + value
     waves = []
     phase = 0
     for i in value:

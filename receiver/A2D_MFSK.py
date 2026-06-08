@@ -22,9 +22,18 @@ def goertzel(samples: np.ndarray, target_freq: float, sample_rate: int) -> float
         s1 = s0
     return s1 * s1 + s2 * s2 - coeff * s1 * s2
 
+def fft_power(samples: np.ndarray, target_freq: float, sample_rate: int) -> float:
+    n = len(samples)
+
+    windowed = samples * np.hanning(n)  #窓関数によるデータ修正
+    spectrum = np.fft.rfft(windowed)  #実数FFT
+    freqs = np.fft.rfftfreq(n, d=1 / sample_rate)  #各FFTビンの周波数
+    idx = np.argmin(np.abs(freqs - target_freq))  #target_freq に一番近いビンを探す
+    return float(np.abs(spectrum[idx]) ** 2)  #その周波数成分の強さを返す
+
 
 def detect_symbol(samples: np.ndarray) -> int: #16チャネルのうちどの周波数が最も強いかを検出する
-    powers = [goertzel(samples, f, sampling_rate) for f in signal_freqs]
+    powers = [fft_power(samples, f, sampling_rate) for f in signal_freqs]
     return int(np.argmax(powers))
 
 def decode_symbols_to_text(payload_symbols: list[int]) -> str: #ペイロードのシンボル列をテキストに変換
@@ -86,7 +95,7 @@ def decode_framed(read_samples) -> str: #同期前は0.5シンボル単位で読
                 temp_max = 0
                 start_preamble = phase_offset #偶数での読み取り時はrecent_rawの先頭から、奇数での読み取り時は半シンボル分オフセットした位置から
                 for i in range(phase_offset, phase_offset + HALF_N):
-                    score = goertzel(recent_raw[i:i+N], signal_freqs[0], sampling_rate)
+                    score = fft_power(recent_raw[i:i+N], signal_freqs[0], sampling_rate)
                     if score > temp_max:
                         temp_max = score
                         start_preamble = i
