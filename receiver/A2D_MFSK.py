@@ -10,6 +10,9 @@ N = int(sampling_rate * signal_ms / 1000) # 1シンボルあたりのサンプ�
 # 50%オーバーラップ時のホップ幅
 HALF_N = N // 2
 
+"""""
+#goertzelアルゴリズムによる周波数成分の強さの計算
+
 def goertzel(samples: np.ndarray, target_freq: float, sample_rate: int) -> float: #goertzelアルゴリズムというものがあるらしい...
     n = len(samples)
     k = int(0.5 + n * target_freq / sample_rate)
@@ -26,6 +29,23 @@ def goertzel(samples: np.ndarray, target_freq: float, sample_rate: int) -> float
 def detect_symbol(samples: np.ndarray) -> int: #16チャネルのうちどの周波数が最も強いかを検出する
     powers = [goertzel(samples, f, sampling_rate) for f in signal_freqs]
     return int(np.argmax(powers))
+"""
+
+#FFTによる周波数成分の強さの計算
+def fft_power(samples: np.ndarray, target_freq: float, sample_rate: int) -> float:
+    n = len(samples)
+
+    windowed = samples * np.hanning(n)  #窓関数によるデータ修正
+    spectrum = np.fft.rfft(windowed)  #実数FFT
+    freqs = np.fft.rfftfreq(n, d=1 / sample_rate)  #各FFTビンの周波数
+    idx = np.argmin(np.abs(freqs - target_freq))  #target_freq に一番近いビンを探す
+    return float(np.abs(spectrum[idx]) ** 2)  #その周波数成分の強さを返す
+
+def detect_symbol(samples: np.ndarray) -> int:
+    powers = [fft_power(samples, f, sampling_rate) for f in signal_freqs]
+    return int(np.argmax(powers))
+
+
 
 def decode_symbols_to_text(payload_symbols: list[int]) -> str: #ペイロードのシンボル列をテキストに変換
     #シンボル列をビット列に変換
