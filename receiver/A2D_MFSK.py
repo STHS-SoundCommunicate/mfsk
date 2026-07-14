@@ -5,6 +5,10 @@ import sounddevice as sd
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from const import *
+from rs_codec import (
+    convert_fsk_symbols_to_bytes,
+    rs_decode
+)
 
 N = int(sampling_rate * signal_ms / 1000) # 1シンボルあたりのサンプル数(882サンプル)
 # 50%オーバーラップ時のホップ幅
@@ -37,6 +41,19 @@ def detect_symbol(samples: np.ndarray) -> int: #16チャネルのうちどの周
     return int(np.argmax(powers))
 
 def decode_symbols_to_text(payload_symbols: list[int]) -> str: #ペイロードのシンボル列をテキストに変換
+    # 4bitシンボル → byte列
+    byte_array = convert_fsk_symbols_to_bytes(payload_symbols)
+    # RS復号
+    decoded_bytes = rs_decode(
+        byte_array,
+        parity_symbols = 16
+    )
+    # UTF-8へ変換
+    return bytes(decoded_bytes).decode(
+        "utf-8",
+        errors="replace" 
+    )
+    """
     #シンボル列をビット列に変換
     bits: list[int] = []
     for s in payload_symbols:
@@ -50,7 +67,7 @@ def decode_symbols_to_text(payload_symbols: list[int]) -> str: #ペイロード�
             b = (b << 1) | bit
         byte_array.append(b)
     return bytes(byte_array).decode("utf-8", errors="replace")#utf-8でデコード
-
+    """
 
 def read_symbol(read_samples) -> int: #1シンボル分のサンプル読み取り
     data = read_samples(N)
