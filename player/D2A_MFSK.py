@@ -4,6 +4,7 @@ import wave　#test
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from const import *
+from rs_codec import convert_text_to_fsk_symbols
 
 signal_freqs = []
 for i in range (channels):
@@ -74,8 +75,12 @@ def save_wave(data: np.ndarray, filename :str):
 if __name__ == "__main__":
     print("送信するメッセージを入力")
     send_data = input()
-    bits =  str2bits(send_data)
-    value = bits2index(bits) #いい変数名募集(2回目)
+    value = convert_text_to_fsk_symbols(
+        send_data, 
+        parity_symbols = 16
+    )
+    # bits =  str2bits(send_data)
+    # value = bits2index(bits) #いい変数名募集(2回目)
     value = genheader(value) + value
     waves = []
     phase = 0
