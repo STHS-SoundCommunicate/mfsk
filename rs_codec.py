@@ -272,7 +272,7 @@ def add_rs_parity(
 
 def create_rs_protected_bytes(
         text: str,
-        parity_symbols: int = 16
+        parity_symbols: int = 64
 ) -> list[int]:
 
     message_bytes = list(
@@ -289,7 +289,7 @@ def create_rs_protected_bytes(
 
 def convert_text_to_fsk_symbols(
         text: str,
-        parity_symbols: int = 16
+        parity_symbols: int = 64
 ) -> list[int]:
 
     protected_bytes = create_rs_protected_bytes(
@@ -595,7 +595,7 @@ def correct_rs_errors(
 
 def rs_decode(
         received: list[int],
-        parity_symbols: int = 16
+        parity_symbols: int = 64
 ):
 
     corrected = correct_rs_errors(
