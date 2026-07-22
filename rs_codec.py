@@ -511,25 +511,25 @@ def forney_algorithm(
 
         # X = α^position
 
-        x = GF_EXP[
-            (255-position)%255
-        ]
+        x = GF_EXP[(255 - position) % 255]
 
         x_eval = inverse_gf256(x)
 
         numerator = polynomial_evaluate(
-            error_evaluator,
-            x_eval
+            error_evaluator, 
+            x
         )
 
         denominator = polynomial_evaluate(
             locator_derivative,
-            x_eval
+            x
         )
 
-        magnitude = divide_gf256(
-            numerator,
-            denominator
+        xp = inverse_gf256(x)
+        
+        magnitude = multiply_gf256(
+            multiply_gf256(xp, xp),
+            divide_gf256(numerator, denominator)
         )
 
         error_values.append(
