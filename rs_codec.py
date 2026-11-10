@@ -9,14 +9,11 @@ GF_LOG = [0] * 256
 # GF(256) 初期化
 # GF(256)で使用する指数表・対数表を生成する
 def initialize_gf256_table():
-
     value = 1
-
     for i in range(255):
         GF_EXP[i] = value
         GF_LOG[value] = i
         value <<= 1
-
         if value & 0x100:
             value ^= PRIMITIVE_POLYNOMIAL
 
@@ -26,48 +23,36 @@ def initialize_gf256_table():
 initialize_gf256_table()
 
 # GF(256) 加算・減算
-
 def add_gf256(a: int, b: int) -> int:
     return a ^ b
-
-
 def subtract_gf256(a: int, b: int) -> int:
     return a ^ b
 
 # GF(256) 乗算
-
 def multiply_gf256(a: int, b: int) -> int:
-
     if a == 0 or b == 0:
         return 0
-
     return GF_EXP[
         (GF_LOG[a] + GF_LOG[b]) % 255
     ]
 
 # GF(256) 除算
-
 def divide_gf256(a: int, b: int):
-
     if b == 0:
         raise ZeroDivisionError(
             "GF256 divide by zero"
         )
-
     if a == 0:
         return 0
-
+        
     return GF_EXP[
         (GF_LOG[a] - GF_LOG[b]) % 255
     ]
 
 # GF(256) 累乗
-
 def power_gf256(a: int, power: int):
-
     if power == 0:
         return 1
-
     if a == 0:
         return 0
 
@@ -76,21 +61,16 @@ def power_gf256(a: int, power: int):
     ]
 
 # GF(256) 逆数
-
 def inverse_gf256(a: int):
-
     if a == 0:
         raise ZeroDivisionError(
             "inverse of zero"
         )
-
     return GF_EXP[
         255 - GF_LOG[a]
     ]
 
-
 # byte → 4bitシンボル
-
 def convert_bytes_to_fsk_symbols(
         byte_data: list[int]
 ) -> list[int]:
@@ -106,9 +86,7 @@ def convert_bytes_to_fsk_symbols(
 
     return symbols
 
-
 # 4bitシンボル → byte
-
 def convert_fsk_symbols_to_bytes(
         symbols: list[int]
 ) -> list[int]:
@@ -121,21 +99,17 @@ def convert_fsk_symbols_to_bytes(
     byte_data = []
 
     for i in range(0, len(symbols), 2):
-
         value = (
             (symbols[i] << 4)
             | symbols[i + 1]
         )
-
         byte_data.append(value)
 
     return byte_data
 
 # 多項式演算
-
 def polynomial_scale(poly: list[int], x: int) -> list[int]: # 多項式の各係数をx倍する
     return [multiply_gf256(c, x) for c in poly]
-
 
 def polynomial_add(poly1: list[int], poly2: list[int]) -> list[int]:
 
@@ -145,28 +119,23 @@ def polynomial_add(poly1: list[int], poly2: list[int]) -> list[int]:
     for i in range(length):
         a = poly1[i] if i < len(poly1) else 0
         b = poly2[i] if i < len(poly2) else 0
-
         result[i] = a ^ b
 
     return result
 
-
 def polynomial_multiply(poly1: list[int],
                         poly2: list[int]) -> list[int]: # GF(256)上での多項式乗算
-
 
     result = [0] * (len(poly1) + len(poly2) - 1)
 
     for i in range(len(poly1)):
         for j in range(len(poly2)):
-
             result[i + j] ^= multiply_gf256(
                 poly1[i],
                 poly2[j]
             )
 
     return result
-
 
 def polynomial_evaluate(
         poly:list[int],
@@ -175,7 +144,6 @@ def polynomial_evaluate(
 
     result = 0
     power = 1
-
 
     for coefficient in poly:
         result ^= multiply_gf256(
@@ -190,18 +158,13 @@ def polynomial_evaluate(
 
     return result
 
-
 # RS生成多項式
-
 def generate_rs_generator_polynomial(
         parity_symbols
 ):
 
     generator=[1]
-
-
     for i in range(parity_symbols):
-
         generator = polynomial_multiply(
             generator,
             [
@@ -210,22 +173,17 @@ def generate_rs_generator_polynomial(
             ]
         )
 
-
     return generator
 
-
 # RS符号化
-
 def add_rs_parity(
         message_bytes: list[int],
         parity_symbols: int
 ) -> list[int]:
 
-
     generator = generate_rs_generator_polynomial(
         parity_symbols
     )
-
 
     encoded = (
         message_bytes
@@ -233,43 +191,30 @@ def add_rs_parity(
         [0]*parity_symbols
     )
 
-
     generator_degree = len(generator)-1
-
 
     # 低次順多項式除算
     for i in range(len(message_bytes)):
-
         coefficient = encoded[i]
-
-
         if coefficient == 0:
             continue
-
-
         factor = divide_gf256(
             coefficient,
             generator[0]
         )
-
-
+    
         for j in range(len(generator)):
-
             encoded[i+j] ^= multiply_gf256(
                 generator[j],
                 factor
             )
 
-
     parity = encoded[-parity_symbols:]
-
 
     return message_bytes + parity
     
-    
 # 文字列→RS符号付きbyte列
 # UTF-8文字列へRSパリティを追加
-
 def create_rs_protected_bytes(
         text: str,
         parity_symbols: int = 16
@@ -284,9 +229,7 @@ def create_rs_protected_bytes(
         parity_symbols
     )
 
-
 # 文字列→16FSKシンボル列
-
 def convert_text_to_fsk_symbols(
         text: str,
         parity_symbols: int = 16
@@ -301,9 +244,7 @@ def convert_text_to_fsk_symbols(
         protected_bytes
     )
 
-
 # シンドローム計算
-
 def calculate_rs_syndromes(
         codeword:list[int],
         parity_symbols:int
@@ -333,10 +274,8 @@ def calculate_rs_syndromes(
 
     return syndromes
 
-
 # 誤り検出
 # RS符号語に誤りがあるか判定する
-
 def has_rs_error(
         codeword: list[int],
         parity_symbols: int
@@ -351,7 +290,6 @@ def has_rs_error(
 
 # Berlekamp–Massey法
 # シンドロームから誤り位置多項式σ(x)を求める
-
 def berlekamp_massey(
         syndromes: list[int]
 ):
@@ -364,60 +302,46 @@ def berlekamp_massey(
     b = 1
 
     for n in range(len(syndromes)):
-
         # discrepancy計算
-
         discrepancy = syndromes[n]
-
         for i in range(1, L + 1):
-
             discrepancy ^= multiply_gf256(
                 sigma[i],
                 syndromes[n - i]
             )
 
         # d==0
-
         if discrepancy == 0:
-
             m += 1
             continue
-          
         # σを保存
-
         temp_sigma = sigma[:]
-
         scale = divide_gf256(
             discrepancy,
             b
         )
-
+        
         while len(sigma) < len(previous_sigma) + m:
             sigma.append(0)
-
+            
         for i in range(len(previous_sigma)):
-
             sigma[i + m] ^= multiply_gf256(
                 previous_sigma[i],
                 scale
             )
 
         # 更新判定
-
         if 2 * L <= n:
             L = n + 1 - L
             previous_sigma = temp_sigma
             b = discrepancy
             m = 1
-
         else:
             m += 1
 
     return sigma, L
 
-
 # Chien Search
-
 def chien_search(
         error_locator,
         code_length
@@ -434,14 +358,11 @@ def chien_search(
             error_locator,
             x
         ) == 0:
-
             error_positions.append(i)
 
     return error_positions
 
-
 # 誤り評価多項式
-
 def calculate_error_evaluator(
         syndromes: list[int],
         locator: list[int],
@@ -458,13 +379,11 @@ def calculate_error_evaluator(
 
     # x^(2t)以上を捨てる
     omega = product[:parity_symbols]
-
     return omega
 
 # 誤り位置多項式の微分
 # GF(256)上の多項式微分
 # GF(2^m)では偶数次数項は消える
-
 def formal_derivative(
         polynomial: list[int]
 ):
@@ -485,10 +404,8 @@ def formal_derivative(
 
     return result
 
-
 # Forney法
 # 誤り値を計算する
-
 def forney_algorithm(
         syndromes,
         error_locator,
@@ -508,30 +425,22 @@ def forney_algorithm(
     error_values = []
 
     for position in error_positions:
-
         # X = α^position
-
         x = GF_EXP[(255 - position) % 255]
-
         x_eval = inverse_gf256(x)
-
         numerator = polynomial_evaluate(
             error_evaluator, 
             x
         )
-
         denominator = polynomial_evaluate(
             locator_derivative,
             x
         )
-
         xp = inverse_gf256(x)
-        
         magnitude = multiply_gf256(
             multiply_gf256(xp, xp),
             divide_gf256(numerator, denominator)
         )
-
         error_values.append(
             magnitude
         )
@@ -552,9 +461,7 @@ def correct_rs_errors(
     )
 
     # 誤りなし
-
     if not any(syndromes):
-
         return codeword
 
     locator, error_count = berlekamp_massey(
@@ -567,7 +474,6 @@ def correct_rs_errors(
     )
 
     if len(error_positions) != error_count:
-
         raise ValueError(
             "誤り位置を特定できません"
         )
@@ -584,7 +490,6 @@ def correct_rs_errors(
             error_positions,
             error_values
     ):
-
         corrected[pos] ^= value
 
     return corrected
@@ -592,7 +497,6 @@ def correct_rs_errors(
 
 # RS復号
 # 受信したRS符号を復号する
-
 def rs_decode(
         received: list[int],
         parity_symbols: int = 16
